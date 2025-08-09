@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const VestaLogo = ({ className }: { className?: string }) => (
@@ -7,6 +6,24 @@ export const VestaLogo = ({ className }: { className?: string }) => (
     <path d="M25 75V55L50 35L75 55V75H55V60H45V75H25Z" fill="#F4F7F9"/>
     <path d="M50 25L20 45L50 55L80 45L50 25Z" fill="#4A90E2"/>
   </svg>
+);
+
+export const GoogleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
+        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.467-11.303-8H6.306C9.656,39.663,16.318,44,24,44z"/>
+        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.631,44,30.836,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+    </svg>
+);
+
+export const MicrosoftIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
+        <path fill="#ff5722" d="M6 6H22V22H6z" transform="rotate(-180 14 14)"/>
+        <path fill="#4caf50" d="M26 6H42V22H26z" transform="rotate(-180 34 14)"/>
+        <path fill="#2196f3" d="M6 26H22V42H6z" transform="rotate(-180 14 34)"/>
+        <path fill="#ffc107" d="M26 26H42V42H26z" transform="rotate(-180 34 34)"/>
+    </svg>
 );
 
 export const DashboardIcon = ({ className }: { className?: string }) => (
@@ -184,5 +201,35 @@ export const PaletteIcon = ({ className }: { className?: string }) => (
         <circle cx="8.5" cy="7.5" r=".5"></circle>
         <circle cx="6.5" cy="12.5" r=".5"></circle>
         <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.667 0-.424-.103-.822-.284-1.172a2.5 2.5 0 00-4.733-1.667c-.31-.63-.78-1.5-1.633-2.167-.852-.667-2-1.167-2.167-2.333a2.5 2.5 0 012.5-2.5c1.333 0 2.833.333 4.167 1.167.5.333 1 .667 1.5 1 .417.25.833.417 1.25.5.5.083.917.167 1.25.167C19.667 12 22 9.667 22 6.5A4.5 4.5 0 0017.5 2c-1.5 0-2.833.333-4 1z"></path>
+    </svg>
+);
+
+export const ChevronDownIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+);
+
+export const XCircleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+    </svg>
+);
+
+export const AlertTriangleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+);
+
+export const AlertCircleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
     </svg>
 );

@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { NavigateTo, Screen, User } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
@@ -30,7 +31,10 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
     const [isAdding, setIsAdding] = useState(false);
 
     const handleAddSource = () => {
-        if (!newUrl.trim()) return;
+        if (!newUrl.trim() || !newUrl.startsWith('http')) {
+            alert("Please enter a valid URL starting with http or https.");
+            return;
+        }
         
         const crawlingSource: KnowledgeSource = {
             id: Date.now(),
@@ -58,24 +62,25 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
       <Header title="Knowledge Base" />
       <div className="p-8 space-y-8">
         
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-vesta-border dark:border-gray-700">
-            <h3 className="text-lg font-bold text-vesta-primary dark:text-gray-200 mb-4">Add New Regulatory Source</h3>
-            <div className="flex items-center space-x-4">
-                <div className="relative flex-grow">
-                    <GlobeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg card-shadow border border-border-light dark:border-border-dark">
+            <h3 className="text-lg font-bold text-primary-text-light dark:text-primary-text-dark mb-4">Add New Regulatory Source</h3>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative flex-grow w-full">
+                    <GlobeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-text-light dark:text-secondary-text-dark" />
                     <input 
-                        type="text"
+                        type="url"
                         value={newUrl}
                         onChange={(e) => setNewUrl(e.target.value)}
                         placeholder="https://www.example-regulator.gov/documents/..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 dark:text-gray-100"
+                        className="w-full pl-10 pr-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-card dark:bg-dark-card text-primary-text-light dark:text-primary-text-dark"
                         disabled={isAdding}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddSource()}
                     />
                 </div>
                 <button 
                     onClick={handleAddSource}
                     disabled={isAdding || !newUrl.trim()}
-                    className="flex items-center justify-center px-6 py-2 bg-vesta-primary text-white font-bold rounded-lg hover:bg-opacity-90 transition disabled:bg-opacity-50 disabled:cursor-not-allowed w-36"
+                    className="flex-shrink-0 flex items-center justify-center px-6 py-2 btn-primary text-white font-bold rounded-lg hover:bg-opacity-90 transition disabled:bg-opacity-50 disabled:cursor-not-allowed w-full sm:w-auto whitespace-nowrap"
                 >
                     {isAdding ? (
                         <>
@@ -93,42 +98,42 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-vesta-text dark:text-gray-200 mb-4">Managed Sources</h2>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-vesta-border dark:border-gray-700">
+          <h2 className="text-xl font-bold text-primary-text-light dark:text-primary-text-dark mb-4">Managed Sources</h2>
+          <div className="bg-light-card dark:bg-dark-card rounded-lg card-shadow overflow-hidden border border-border-light dark:border-border-dark">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-vesta-border dark:border-gray-700">
+              <thead className="bg-gray-50 dark:bg-dark-main/20 border-b border-border-light dark:border-border-dark">
                 <tr>
-                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Source URL</th>
-                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Date Added</th>
-                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Status</th>
-                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Actions</th>
+                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Source URL</th>
+                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Date Added</th>
+                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Status</th>
+                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.map((source, index) => (
-                  <tr key={source.id} className="border-b border-vesta-border dark:border-gray-700 last:border-b-0">
-                    <td className="p-4 text-vesta-primary dark:text-vesta-secondary font-medium truncate max-w-sm">
+                  <tr key={source.id} className="border-b border-border-light dark:border-border-dark last:border-b-0">
+                    <td className="p-4 text-primary-blue dark:text-blue-400 font-medium truncate max-w-sm">
                         <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{source.url}</a>
                     </td>
-                    <td className="p-4 text-vesta-text-light dark:text-gray-400">{source.addedDate}</td>
+                    <td className="p-4 text-secondary-text-light dark:text-secondary-text-dark">{source.addedDate}</td>
                     <td className="p-4">
                       {source.status === 'Active' ? (
-                        <span className="px-3 py-1 text-xs font-semibold text-vesta-accent-success bg-vesta-accent-success/10 rounded-full">
+                        <span className="px-3 py-1 text-xs font-semibold text-accent-success bg-accent-success/10 rounded-full">
                           {source.status}
                         </span>
                       ) : (
-                         <span className="flex items-center px-3 py-1 text-xs font-semibold text-vesta-secondary bg-vesta-secondary/10 rounded-full">
-                           <div className="w-3 h-3 border-2 border-vesta-secondary border-t-transparent rounded-full animate-spin mr-2"></div>
+                         <span className="flex items-center px-3 py-1 text-xs font-semibold text-primary-blue bg-primary-blue/10 rounded-full">
+                           <div className="w-3 h-3 border-2 border-primary-blue border-t-transparent rounded-full animate-spin mr-2"></div>
                            {source.status}
                          </span>
                       )}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                          <button aria-label="Refresh Source" className="text-gray-400 hover:text-vesta-secondary transition">
+                          <button aria-label="Refresh Source" className="text-gray-400 hover:text-primary-blue transition">
                               <RefreshIcon className="w-5 h-5"/>
                           </button>
-                          <button onClick={() => handleDeleteSource(source.id)} aria-label="Delete Source" className="text-gray-400 hover:text-vesta-accent-critical transition">
+                          <button onClick={() => handleDeleteSource(source.id)} aria-label="Delete Source" className="text-gray-400 hover:text-accent-critical transition">
                               <TrashIcon className="w-5 h-5"/>
                           </button>
                       </div>

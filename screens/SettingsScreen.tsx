@@ -1,9 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import { NavigateTo, Screen, User } from '../types';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { NavigateTo, Screen, User, WorkspaceUser, UserRole } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
 import { Header } from '../components/Header';
 import { UserProfileIcon, BellIcon, BriefcaseIcon, ShieldIcon, LinkIcon, KeyIcon, MoonIcon, SunIcon, UploadCloudIcon, PaletteIcon, PlusIcon, TrashIcon } from '../components/Icons';
+import InviteUserModal from '../components/InviteUserModal';
+
 
 interface SettingsScreenProps {
   navigateTo: NavigateTo;
@@ -11,31 +14,46 @@ interface SettingsScreenProps {
   onLogout: () => void;
 }
 
-const SettingsCard = ({ title, subtitle, children }: { title: string, subtitle: string, children: React.ReactNode }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-vesta-border dark:border-gray-700">
-        <div className="p-6 border-b border-vesta-border dark:border-gray-700">
-            <h3 className="text-lg font-bold text-vesta-primary dark:text-gray-100">{title}</h3>
-            <p className="text-sm text-vesta-text-light dark:text-gray-400 mt-1">{subtitle}</p>
+const SettingsCard = ({ title, subtitle, children, footer }: { title: string, subtitle: string, children: React.ReactNode, footer?: React.ReactNode }) => (
+    <div className="bg-light-card dark:bg-dark-card rounded-lg shadow-sm border border-border-light dark:border-border-dark">
+        <div className="p-6">
+            <h3 className="text-lg font-bold text-primary-text-light dark:text-primary-text-dark">{title}</h3>
+            <p className="text-sm text-secondary-text-light dark:text-secondary-text-dark mt-1">{subtitle}</p>
         </div>
-        <div className="p-6 space-y-6">
+        <div className="p-6 pt-0 space-y-6">
             {children}
         </div>
+        {footer && (
+          <div className="bg-gray-50 dark:bg-dark-main px-6 py-4 rounded-b-lg border-t border-border-light dark:border-border-dark text-right">
+              {footer}
+          </div>
+        )}
     </div>
 );
 
-const SettingsInput = ({ label, type, id, value, onChange, placeholder }: { label: string, type: string, id: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder?: string }) => (
+const SettingsInput = ({ label, type, id, value, onChange, placeholder, disabled = false }: { label: string, type: string, id: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder?: string, disabled?: boolean }) => (
     <div>
-        <label htmlFor={id} className="block text-sm font-medium text-vesta-text dark:text-gray-300 mb-2">{label}</label>
-        <input type={type} id={id} value={value} onChange={onChange} placeholder={placeholder} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 text-vesta-text dark:text-gray-100" />
+        <label htmlFor={id} className="block text-sm font-medium text-primary-text-light dark:text-primary-text-dark mb-2">{label}</label>
+        <input type={type} id={id} value={value} onChange={onChange} placeholder={placeholder} disabled={disabled} className="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-card dark:bg-dark-card text-primary-text-light dark:text-primary-text-dark disabled:bg-gray-100 dark:disabled:bg-gray-800" />
     </div>
 );
+
+const SettingsSelect = ({ label, id, value, onChange, children }: { label: string, id: string, value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, children: React.ReactNode }) => (
+    <div>
+        <label htmlFor={id} className="block text-sm font-medium text-primary-text-light dark:text-primary-text-dark mb-2">{label}</label>
+        <select id={id} value={value} onChange={onChange} className="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-card dark:bg-dark-card text-primary-text-light dark:text-primary-text-dark appearance-none bg-no-repeat" style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundSize: '1.5em 1.5em'}}>
+            {children}
+        </select>
+    </div>
+);
+
 
 const SettingsToggle = ({ label, enabled, setEnabled }: { label: string, enabled: boolean, setEnabled: (enabled: boolean) => void }) => (
     <div className="flex items-center justify-between">
-        <span className="text-vesta-text dark:text-gray-300">{label}</span>
+        <span className="text-primary-text-light dark:text-primary-text-dark">{label}</span>
         <button
             onClick={() => setEnabled(!enabled)}
-            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${enabled ? 'bg-vesta-secondary' : 'bg-gray-200 dark:bg-gray-600'}`}
+            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${enabled ? 'bg-primary-blue' : 'bg-gray-200 dark:bg-gray-600'}`}
         >
             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
         </button>
@@ -44,6 +62,12 @@ const SettingsToggle = ({ label, enabled, setEnabled }: { label: string, enabled
 
 const ProfileSettings = ({ user }: { user: User }) => {
     const [theme, setTheme] = useState(localStorage.getItem('vesta-theme') || 'light');
+    const [name, setName] = useState(user.name);
+    const [jobTitle, setJobTitle] = useState('Financial Analyst');
+    const [language, setLanguage] = useState('en-US');
+    const [timezone, setTimezone] = useState('Asia/Manila');
+    const [profilePic, setProfilePic] = useState<string | null>(user.avatar || null);
+    const profilePicInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -54,160 +78,192 @@ const ProfileSettings = ({ user }: { user: User }) => {
             localStorage.setItem('vesta-theme', 'light');
         }
     }, [theme]);
+    
+    const handlePictureUpload = () => profilePicInputRef.current?.click();
+    
+    const onProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => setProfilePic(event.target?.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <div className="space-y-8">
             <SettingsCard title="Personal Information" subtitle="Update your photo and personal details here.">
+                <input type="file" accept="image/*" ref={profilePicInputRef} onChange={onProfilePicChange} className="hidden" />
                 <div className="flex items-center space-x-6">
-                    <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <UploadCloudIcon className="w-10 h-10 text-gray-400" />
+                    <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                        {profilePic ? <img src={profilePic} alt="Profile" className="w-full h-full object-cover" /> : <UserProfileIcon className="w-12 h-12 text-gray-400" />}
                     </div>
-                    <div className="space-y-2">
-                         <button className="px-4 py-2 text-sm font-semibold text-white bg-vesta-secondary rounded-lg hover:bg-opacity-90">Upload new picture</button>
-                         <button className="px-4 py-2 text-sm font-semibold text-vesta-text-light dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500">Remove</button>
+                    <div className="space-x-2">
+                         <button onClick={handlePictureUpload} className="px-4 py-2 text-sm font-semibold text-white bg-primary-blue rounded-lg hover:bg-opacity-90">Upload new picture</button>
+                         <button onClick={() => setProfilePic(null)} className="px-4 py-2 text-sm font-semibold text-secondary-text-light dark:text-secondary-text-dark bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500">Remove</button>
                     </div>
                 </div>
-                <SettingsInput label="Full Name" id="name" type="text" value={user.name} onChange={() => {}} />
-                <SettingsInput label="Job Title" id="jobTitle" type="text" value="Financial Analyst" placeholder="e.g. Project Manager" onChange={() => {}} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SettingsInput label="Full Name" id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                    <SettingsInput label="Job Title" id="jobTitle" type="text" value={jobTitle} placeholder="e.g. Project Manager" onChange={(e) => setJobTitle(e.target.value)} />
+                </div>
             </SettingsCard>
 
              <SettingsCard title="Password Management" subtitle="Manage your password for added security.">
-                <SettingsInput label="Current Password" id="currentPassword" type="password" value="" onChange={() => {}} />
-                <SettingsInput label="New Password" id="newPassword" type="password" value="" onChange={() => {}} />
-                <SettingsInput label="Confirm New Password" id="confirmPassword" type="password" value="" onChange={() => {}} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SettingsInput label="New Password" id="newPassword" type="password" value="" onChange={() => {}} />
+                    <SettingsInput label="Confirm New Password" id="confirmPassword" type="password" value="" onChange={() => {}} />
+                </div>
                  <div className="flex justify-end">
-                    <button className="px-6 py-2 font-semibold text-white bg-vesta-primary rounded-lg hover:bg-opacity-90">Update Password</button>
+                    <button className="px-6 py-2 font-semibold text-white bg-primary-blue rounded-lg hover:bg-opacity-90">Update Password</button>
                 </div>
             </SettingsCard>
             
             <SettingsCard title="Appearance & Theme" subtitle="Customize how Vesta looks for you.">
                 <div className="flex items-center justify-between">
-                    <span className="text-vesta-text dark:text-gray-300">Theme</span>
-                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg p-1">
-                        <button onClick={() => setTheme('light')} className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'light' ? 'bg-vesta-secondary text-white' : 'text-vesta-text-light'}`}>
+                    <span className="text-primary-text-light dark:text-primary-text-dark">Theme</span>
+                    <div className="flex items-center border border-border-light dark:border-border-dark rounded-lg p-1">
+                        <button onClick={() => setTheme('light')} className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'light' ? 'bg-primary-blue text-white' : 'text-primary-text-light dark:text-primary-text-dark'}`}>
                             <SunIcon className="w-4 h-4 mr-2" /> Light
                         </button>
-                         <button onClick={() => setTheme('dark')} className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'dark' ? 'bg-vesta-secondary text-white' : 'text-vesta-text-light'}`}>
+                         <button onClick={() => setTheme('dark')} className={`px-3 py-1 rounded-md text-sm flex items-center ${theme === 'dark' ? 'bg-primary-blue text-white' : 'text-primary-text-light dark:text-primary-text-dark'}`}>
                             <MoonIcon className="w-4 h-4 mr-2" /> Dark
                         </button>
                     </div>
                 </div>
-                 <SettingsInput label="Language" id="language" type="text" value="English (United States)" onChange={() => {}} />
-                 <SettingsInput label="Time Zone" id="timezone" type="text" value="(GMT+08:00) Manila" onChange={() => {}} />
+            </SettingsCard>
+
+             <div className="flex justify-end space-x-3">
+                <button className="px-6 py-2 font-semibold text-secondary-text-light dark:text-secondary-text-dark bg-light-card dark:bg-dark-card border border-border-light dark:border-border-dark rounded-lg hover:bg-gray-200 dark:hover:bg-dark-sidebar">Cancel</button>
+                <button className="px-6 py-2 font-semibold text-white bg-primary-blue rounded-lg hover:bg-opacity-90">Save Changes</button>
+            </div>
+        </div>
+    );
+};
+
+interface WorkspaceSettingsProps {
+    users: WorkspaceUser[];
+    onInviteClick: () => void;
+    onDeleteUser: (id: string) => void;
+    onRoleChange: (id: string, newRole: UserRole) => void;
+}
+
+const WorkspaceSettings: React.FC<WorkspaceSettingsProps> = ({ users, onInviteClick, onDeleteUser, onRoleChange }) => {
+    return (
+        <div className="space-y-8">
+            <p className="text-sm bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 p-3 rounded-lg">These settings are workspace-wide and can only be modified by an administrator.</p>
+            <SettingsCard 
+              title="User Management" 
+              subtitle="Invite new users and manage their roles."
+              footer={
+                <button onClick={onInviteClick} className="flex items-center justify-center px-4 py-2 bg-primary-blue text-white font-bold rounded-lg hover:bg-opacity-90">
+                    <PlusIcon className="w-5 h-5 mr-2" /> Invite User
+                </button>
+              }
+            >
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="border-b border-border-light dark:border-border-dark">
+                        <tr>
+                          <th className="p-2 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Name</th>
+                          <th className="p-2 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Role</th>
+                          <th className="p-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map(user => (
+                             <tr key={user.id} className="border-b border-border-light dark:border-border-dark last:border-b-0">
+                                <td className="p-2 text-primary-text-light dark:text-primary-text-dark">
+                                    <p className="font-medium">{user.name}</p>
+                                    <p className="text-xs text-secondary-text-light dark:text-secondary-text-dark">{user.email}</p>
+                                </td>
+                                <td className="p-2 text-secondary-text-light dark:text-secondary-text-dark">
+                                     <SettingsSelect id={`role-${user.id}`} value={user.role} onChange={e => onRoleChange(user.id, e.target.value as UserRole)} label="">
+                                        <option value="Administrator">Administrator</option>
+                                        <option value="Legal Reviewer">Legal Reviewer</option>
+                                        <option value="Member">Member</option>
+                                     </SettingsSelect>
+                                </td>
+                                <td className="p-2 text-right">
+                                    <button onClick={() => onDeleteUser(user.id)} disabled={user.name.includes('(You)')} className="disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <TrashIcon className="w-5 h-5 text-gray-400 hover:text-accent-critical cursor-pointer" />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                </div>
             </SettingsCard>
         </div>
     );
 };
 
-const WorkspaceSettings = () => (
-    <div className="space-y-8">
-        <p className="text-sm bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 p-3 rounded-lg">These settings are workspace-wide and can only be modified by an administrator.</p>
-        <SettingsCard title="User Management" subtitle="Invite new users and manage their roles.">
-            <button className="flex items-center justify-center px-4 py-2 bg-vesta-primary text-white font-bold rounded-lg hover:bg-opacity-90">
-                <PlusIcon className="w-5 h-5 mr-2" /> Invite User
-            </button>
-            <table className="w-full text-left">
-              <thead className="border-b border-vesta-border dark:border-gray-700">
-                <tr>
-                  <th className="p-2 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Name</th>
-                  <th className="p-2 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Role</th>
-                  <th className="p-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-vesta-border dark:border-gray-700">
-                    <td className="p-2 text-vesta-text dark:text-gray-300">John Doe (You)</td>
-                    <td className="p-2 text-vesta-text-light dark:text-gray-400">Administrator</td>
-                    <td className="p-2 text-right"><TrashIcon className="w-5 h-5 text-gray-400 hover:text-vesta-accent-critical cursor-pointer" /></td>
-                </tr>
-                 <tr className="border-b border-vesta-border dark:border-gray-700">
-                    <td className="p-2 text-vesta-text dark:text-gray-300">Jane Smith</td>
-                    <td className="p-2 text-vesta-text-light dark:text-gray-400">Legal Reviewer</td>
-                    <td className="p-2 text-right"><TrashIcon className="w-5 h-5 text-gray-400 hover:text-vesta-accent-critical cursor-pointer" /></td>
-                </tr>
-              </tbody>
-            </table>
-        </SettingsCard>
-        <SettingsCard title="Custom Risk Models" subtitle="Upload internal policy documents for analysis.">
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 cursor-pointer bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition block text-center">
-                <UploadCloudIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                <p className="text-vesta-text-light dark:text-gray-400 font-semibold">Drag & Drop Your Policy File Here</p>
-            </div>
-        </SettingsCard>
-        <SettingsCard title="Report Branding" subtitle="Customize exported reports with your company's branding.">
-             <div className="flex items-center space-x-4">
-                <PaletteIcon className="w-6 h-6 text-vesta-secondary" />
-                <p className="font-medium text-vesta-text dark:text-gray-300">Company Logo & Primary Color</p>
-             </div>
-             {/* Simple UI for branding */}
-        </SettingsCard>
-    </div>
-);
-
 const NotificationsSettings = () => {
     const [email, setEmail] = useState(true);
     const [inApp, setInApp] = useState(true);
-    const [slack, setSlack] = useState(false);
+    const [analysisComplete, setAnalysisComplete] = useState(true);
+    const [assignedFinding, setAssignedFinding] = useState(true);
+    const [reportComment, setReportComment] = useState(false);
+    const [weeklySummary, setWeeklySummary] = useState(true);
+
     return (
         <div className="space-y-8">
             <SettingsCard title="Notification Channels" subtitle="Choose how you receive alerts from Vesta.">
                 <SettingsToggle label="Email Notifications" enabled={email} setEnabled={setEmail} />
                 <SettingsToggle label="In-App Notifications" enabled={inApp} setEnabled={setInApp} />
-                <SettingsToggle label="Slack Integration" enabled={slack} setEnabled={setSlack} />
             </SettingsCard>
             <SettingsCard title="Event Alerts" subtitle="Select which events you want to be notified about.">
-                <SettingsToggle label="When my document analysis is complete" enabled={true} setEnabled={() => {}} />
-                <SettingsToggle label="When a team member assigns a finding to me" enabled={true} setEnabled={() => {}} />
-                <SettingsToggle label="When a comment is made on my report" enabled={false} setEnabled={() => {}} />
-                <SettingsToggle label="A weekly summary of all unresolved critical issues" enabled={true} setEnabled={() => {}} />
+                <SettingsToggle label="When my document analysis is complete" enabled={analysisComplete} setEnabled={setAnalysisComplete} />
+                <SettingsToggle label="When a team member assigns a finding to me" enabled={assignedFinding} setEnabled={setAssignedFinding} />
+                <SettingsToggle label="When a comment is made on my report" enabled={reportComment} setEnabled={setReportComment} />
+                <SettingsToggle label="A weekly summary of all unresolved critical issues" enabled={weeklySummary} setEnabled={setWeeklySummary} />
             </SettingsCard>
         </div>
     );
 };
 
-const SecuritySettings = () => (
-    <div className="space-y-8">
-        <SettingsCard title="Two-Factor Authentication (2FA)" subtitle="Add an extra layer of security to your account.">
-            <button className="px-4 py-2 font-semibold text-white bg-vesta-accent-success rounded-lg hover:bg-opacity-90">Enable 2FA</button>
-        </SettingsCard>
-        <SettingsCard title="Active Sessions" subtitle="You are currently logged in on these devices.">
-             <div className="flex items-center justify-between text-vesta-text dark:text-gray-300">
-                 <p>Chrome on Windows - Manila, PH <span className="text-vesta-accent-success font-semibold">(current session)</span></p>
-                 <button className="text-sm font-medium text-vesta-secondary hover:underline">Log out</button>
-             </div>
-        </SettingsCard>
-        <SettingsCard title="Data Retention Policy (Admin)" subtitle="Define how long data is stored on Vesta's servers.">
-             <p className="text-sm bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 p-3 rounded-lg">This is an administrator-only setting.</p>
-             <SettingsInput label="Retention Period (in days)" id="retention" type="number" value="365" onChange={() => {}} />
-        </SettingsCard>
-    </div>
-);
+const SecuritySettings = () => {
+    const [is2faEnabled, setIs2faEnabled] = useState(false);
+
+    const handle2faToggle = () => {
+        if (!is2faEnabled) {
+            alert("This would begin the 2FA setup process, likely involving a QR code scan.");
+        }
+        setIs2faEnabled(!is2faEnabled);
+    };
+
+    return (
+        <div className="space-y-8">
+            <SettingsCard title="Two-Factor Authentication (2FA)" subtitle="Add an extra layer of security to your account.">
+                <div className="flex items-center justify-between">
+                    <p className="text-primary-text-light dark:text-primary-text-dark">{is2faEnabled ? "2FA is currently enabled." : "2FA is currently disabled."}</p>
+                    <button onClick={handle2faToggle} className={`px-4 py-2 font-semibold text-white rounded-lg hover:bg-opacity-90 ${is2faEnabled ? 'bg-accent-critical' : 'bg-accent-success'}`}>
+                        {is2faEnabled ? "Disable 2FA" : "Enable 2FA"}
+                    </button>
+                </div>
+            </SettingsCard>
+        </div>
+    );
+}
 
 const IntegrationsSettings = () => (
     <div className="space-y-8">
         <SettingsCard title="Project Management" subtitle="Connect to your team's project management tool.">
             <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-vesta-border dark:border-gray-700 rounded-lg">
-                    <span className="font-bold text-lg">Jira</span>
-                    <button className="px-4 py-2 font-semibold text-white bg-vesta-secondary rounded-lg hover:bg-opacity-90">Connect</button>
+                <div className="flex items-center justify-between p-4 border border-border-light dark:border-border-dark rounded-lg">
+                    <span className="font-bold text-lg text-primary-text-light dark:text-primary-text-dark">Jira</span>
+                    <button className="px-4 py-2 font-semibold text-white bg-primary-blue rounded-lg hover:bg-opacity-90">Connect</button>
                 </div>
-                <div className="flex items-center justify-between p-4 border border-vesta-border dark:border-gray-700 rounded-lg">
-                    <span className="font-bold text-lg">Asana</span>
-                    <button className="px-4 py-2 font-semibold text-white bg-vesta-secondary rounded-lg hover:bg-opacity-90">Connect</button>
+                <div className="flex items-center justify-between p-4 border border-border-light dark:border-border-dark rounded-lg">
+                    <span className="font-bold text-lg text-primary-text-light dark:text-primary-text-dark">Asana</span>
+                    <button className="px-4 py-2 font-semibold text-white bg-primary-blue rounded-lg hover:bg-opacity-90">Connect</button>
                 </div>
-                 <div className="flex items-center justify-between p-4 border border-vesta-border dark:border-gray-700 rounded-lg">
-                    <span className="font-bold text-lg">Trello</span>
+                 <div className="flex items-center justify-between p-4 border border-border-light dark:border-border-dark rounded-lg">
+                    <span className="font-bold text-lg text-primary-text-light dark:text-primary-text-dark">Trello</span>
                     <button className="px-4 py-2 font-semibold text-gray-500 bg-gray-200 dark:bg-gray-600 dark:text-gray-300 rounded-lg cursor-not-allowed">Coming Soon</button>
                 </div>
             </div>
-        </SettingsCard>
-         <SettingsCard title="API Access (Admin)" subtitle="Generate API keys for custom integrations.">
-             <p className="text-sm bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 p-3 rounded-lg">This is an administrator-only setting.</p>
-             <div className="flex items-center space-x-4">
-                <KeyIcon className="w-6 h-6 text-vesta-secondary" />
-                <p className="font-medium text-vesta-text dark:text-gray-300">Manage your API keys</p>
-             </div>
-             <button className="px-4 py-2 font-semibold text-white bg-vesta-primary rounded-lg hover:bg-opacity-90">Generate New Key</button>
         </SettingsCard>
     </div>
 );
@@ -215,6 +271,44 @@ const IntegrationsSettings = () => (
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser, onLogout }) => {
     const [activeTab, setActiveTab] = useState('profile');
+    const [isInviteModalOpen, setInviteModalOpen] = useState(false);
+    
+    const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[]>([
+        { id: currentUser.email, name: `${currentUser.name} (You)`, email: currentUser.email, role: 'Administrator' },
+        { id: 'jane.smith@example.com', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Legal Reviewer' },
+    ]);
+    
+    const handleInviteUser = (email: string, role: UserRole) => {
+        if (!email || workspaceUsers.some(u => u.email === email)) {
+            alert('Please enter a valid, unique email address.');
+            return;
+        }
+        const newUser: WorkspaceUser = {
+            id: email,
+            name: 'New User (Pending)',
+            email,
+            role,
+        };
+        setWorkspaceUsers(prev => [...prev, newUser]);
+        setInviteModalOpen(false);
+    };
+
+    const handleDeleteUser = (id: string) => {
+        if (id === currentUser.email) {
+            alert("You cannot remove yourself from the workspace.");
+            return;
+        }
+        setWorkspaceUsers(prev => prev.filter(u => u.id !== id));
+    };
+
+    const handleRoleChange = (id: string, newRole: UserRole) => {
+        if (id === currentUser.email) {
+            alert("You cannot change your own role.");
+            return;
+        }
+        setWorkspaceUsers(prev => prev.map(u => u.id === id ? { ...u, role: newRole } : u));
+    };
+
 
     const TABS = [
         { id: 'profile', label: 'Profile', icon: <UserProfileIcon className="w-5 h-5 mr-3" /> },
@@ -227,7 +321,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
     const renderContent = () => {
         switch (activeTab) {
             case 'profile': return <ProfileSettings user={currentUser} />;
-            case 'workspace': return <WorkspaceSettings />;
+            case 'workspace': return <WorkspaceSettings users={workspaceUsers} onInviteClick={() => setInviteModalOpen(true)} onDeleteUser={handleDeleteUser} onRoleChange={handleRoleChange} />;
             case 'notifications': return <NotificationsSettings />;
             case 'security': return <SecuritySettings />;
             case 'integrations': return <IntegrationsSettings />;
@@ -239,8 +333,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
         <SidebarMainLayout navigateTo={navigateTo} activeScreen={Screen.Settings} currentUser={currentUser} onLogout={onLogout}>
             <Header title="Settings" />
             <div className="p-8">
-                <div className="flex flex-col md:flex-row gap-8">
-                    <aside className="w-full md:w-64 flex-shrink-0">
+                {isInviteModalOpen && <InviteUserModal onClose={() => setInviteModalOpen(false)} onInvite={handleInviteUser} />}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <aside className="lg:col-span-1">
                         <nav className="space-y-1">
                             {TABS.map(tab => (
                                 <button
@@ -248,8 +343,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                                         activeTab === tab.id
-                                            ? 'bg-vesta-secondary/10 dark:bg-vesta-secondary/20 text-vesta-secondary'
-                                            : 'text-vesta-text-light dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                            ? 'bg-primary-blue text-white'
+                                            : 'text-secondary-text-light dark:text-secondary-text-dark hover:bg-gray-200 dark:hover:bg-dark-card'
                                     }`}
                                 >
                                     {tab.icon}
@@ -258,7 +353,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
                             ))}
                         </nav>
                     </aside>
-                    <div className="flex-1">
+                    <div className="lg:col-span-3">
                         {renderContent()}
                     </div>
                 </div>

@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { AnalysisReport, Finding } from '../types';
 
@@ -51,9 +50,11 @@ export async function analyzePlan(planContent: string): Promise<AnalysisReport> 
                 title: 'Empty Document',
                 severity: 'critical',
                 sourceSnippet: 'N/A',
-                recommendation: 'The submitted document is empty. Please provide a project plan to analyze.'
+                recommendation: 'The submitted document is empty. Please provide a project plan to analyze.',
+                status: 'active',
             }],
-            summary: { critical: 1, warning: 0, checks: 0 }
+            summary: { critical: 1, warning: 0, checks: 0 },
+            documentContent: planContent
         };
     }
 
@@ -84,12 +85,14 @@ export async function analyzePlan(planContent: string): Promise<AnalysisReport> 
                 severity: f.severity,
                 sourceSnippet: f.sourceSnippet,
                 recommendation: f.recommendation,
+                status: 'active',
             })),
             summary: {
                 critical: criticalCount,
                 warning: warningCount,
                 checks: checksPerformed,
             },
+            documentContent: planContent,
         };
     } catch (error) {
         console.error("Error analyzing plan with Gemini:", error);
@@ -101,9 +104,11 @@ export async function analyzePlan(planContent: string): Promise<AnalysisReport> 
                 title: 'Failed to analyze the document.',
                 severity: 'critical',
                 sourceSnippet: 'N/A',
-                recommendation: 'The AI model could not process the document. This might be due to a connection issue or an internal error. Please check your network and try again. If the problem persists, the content might be unsuitable for analysis.'
+                recommendation: 'The AI model could not process the document. This might be due to a connection issue or an internal error. Please check your network and try again. If the problem persists, the content might be unsuitable for analysis.',
+                status: 'active',
             }],
             summary: { critical: 1, warning: 0, checks: 0 },
+            documentContent: planContent,
         };
     }
 }

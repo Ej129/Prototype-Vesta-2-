@@ -1,105 +1,71 @@
-import React, { useLayoutEffect, useState, useRef } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { TourStep } from '../types';
 
 interface TourTooltipProps {
-  step: number;
-  totalSteps: number;
-  targetSelector: string;
-  text: string;
+  targetElement: HTMLElement;
+  step: TourStep;
   onNext: () => void;
-  onBack: () => void;
-  onEnd: () => void;
-  isLastStep?: boolean;
+  onSkip: () => void;
+  nextLabel?: string;
 }
 
-const TourTooltip: React.FC<TourTooltipProps> = ({ step, totalSteps, targetSelector, text, onNext, onBack, onEnd, isLastStep = false }) => {
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, height: 0 });
-  const tooltipRef = useRef<HTMLDivElement>(null);
+const TourTooltip: React.FC<TourTooltipProps> = ({ targetElement, step, onNext, onSkip, nextLabel = 'Next' }) => {
+  if (!targetElement) return null;
 
-  useLayoutEffect(() => {
-    const targetElement = document.querySelector(targetSelector);
-    if (targetElement) {
-      const rect = targetElement.getBoundingClientRect();
-      setPosition({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      });
+  const targetRect = targetElement.getBoundingClientRect();
 
-      // Scroll into view if needed
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-    }
-  }, [targetSelector, step]); // Rerun when step changes to find new element
-  
-  const getTooltipPosition = () => {
-    if(!tooltipRef.current || !window) return {};
-    const tooltipHeight = tooltipRef.current.offsetHeight;
-    const spaceBelow = window.innerHeight - (position.top + position.height);
+  const getPosition = () => {
+    const tooltipHeight = 150; // Approximate height
+    const tooltipWidth = 300; // Approximate width
+    const offset = 12;
 
-    if (spaceBelow > tooltipHeight + 20) {
-      // Position below the element
-      return { top: `${position.top + position.height + 10}px`, left: `${position.left}px` };
-    } else {
-      // Position above the element
-      return { top: `${position.top - tooltipHeight - 10}px`, left: `${position.left}px` };
+    switch (step.position) {
+      case 'bottom':
+        return { top: targetRect.bottom + offset, left: targetRect.left + targetRect.width / 2 - tooltipWidth / 2 };
+      case 'top':
+        return { top: targetRect.top - tooltipHeight - offset, left: targetRect.left + targetRect.width / 2 - tooltipWidth / 2 };
+      case 'left':
+        return { top: targetRect.top + targetRect.height / 2 - tooltipHeight / 2, left: targetRect.left - tooltipWidth - offset };
+      case 'right':
+        return { top: targetRect.top + targetRect.height / 2 - tooltipHeight / 2, left: targetRect.right + offset };
+      default: // Default to bottom
+        return { top: targetRect.bottom + offset, left: targetRect.left + targetRect.width / 2 - tooltipWidth / 2 };
     }
   };
+  
+  const style: React.CSSProperties = {
+    position: 'fixed',
+    ...getPosition(),
+    width: '300px',
+    zIndex: 10000,
+    transform: step.position === 'bottom' || step.position === 'top' ? 'translateX(-50%)' : 'translateY(-50%)',
+    left: `calc(${targetRect.left + targetRect.width / 2}px)`,
+  };
 
-
-  if (position.width === 0) return null;
-
-  return (
-    <div className="fixed inset-0 z-[100]">
-      <div 
-        className="absolute rounded-lg"
-        style={{
-            top: `${position.top - 4}px`,
-            left: `${position.left - 4}px`,
-            width: `${position.width + 8}px`,
-            height: `${position.height + 8}px`,
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7)',
-            transition: 'all 0.3s ease-out',
-            pointerEvents: 'none',
-        }}
-      ></div>
-      <div
-        ref={tooltipRef}
-        className="absolute bg-white dark:bg-gray-800 text-vesta-text dark:text-gray-200 rounded-lg shadow-xl p-4 w-80 z-[101] transform transition-all animate-fade-in-up"
-        style={getTooltipPosition()}
-        role="dialog"
-        aria-labelledby="tour-tooltip-text"
-      >
-        <p id="tour-tooltip-text" className="text-sm mb-4">{text}</p>
+  const content = (
+    <div style={style}>
+      <div className="bg-vesta-primary text-white rounded-lg shadow-2xl p-4 animate-fade-in">
+        <h3 className="font-bold text-lg mb-2">{step.title}</h3>
+        <p className="text-sm text-gray-200 mb-4">{step.content}</p>
         <div className="flex justify-between items-center">
-          <span className="text-xs font-bold text-gray-400">{step}/{totalSteps}</span>
-          <div className="space-x-2">
-            {step > 1 && (
-                <button onClick={onBack} className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-vesta-primary dark:hover:text-vesta-secondary px-2 py-1">Back</button>
-            )}
-            <button onClick={onEnd} className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-vesta-primary dark:hover:text-vesta-secondary px-2 py-1">Skip</button>
-            <button onClick={onNext} className="bg-vesta-primary text-white text-sm font-bold py-1 px-3 rounded-md hover:bg-opacity-90">
-              {isLastStep ? 'Finish' : 'Next'}
-            </button>
-          </div>
+          <button onClick={onSkip} className="text-xs text-gray-300 hover:underline">Skip Tour</button>
+          <button onClick={onNext} className="bg-vesta-secondary text-white font-bold py-1.5 px-4 rounded-md text-sm hover:bg-opacity-90 transition-all">
+            {nextLabel}
+          </button>
         </div>
       </div>
-       <style>{`
-        @keyframes fade-in-up {
-          0% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
+      <style>{`
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.3s ease-out forwards;
-        }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
       `}</style>
     </div>
   );
+
+  return ReactDOM.createPortal(content, document.body);
 };
 
 export default TourTooltip;

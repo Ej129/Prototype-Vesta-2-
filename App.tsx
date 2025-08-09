@@ -1,132 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { Screen, NavigateTo, AnalysisReport, User } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Screen, NavigateTo, AnalysisReport, User, AuditLog, AuditLogAction } from './types';
 import LoginScreen from './screens/LoginScreen';
 import DashboardScreen from './screens/DashboardScreen';
-import UploadScreen from './screens/UploadScreen';
-import AnalysisInProgressScreen from './screens/AnalysisInProgressScreen';
-import ReportScreen from './screens/ReportScreen';
-import PlaceholderScreen from './screens/PlaceholderScreen';
+import AnalysisScreen from './screens/AnalysisScreen';
+import AuditTrailScreen from './screens/AuditTrailScreen';
 import KnowledgeBaseScreen from './screens/KnowledgeBaseScreen';
 import SettingsScreen from './screens/SettingsScreen';
-import ImprovingScreen from './screens/ImprovingScreen';
-import ImprovedReportScreen from './screens/ImprovedReportScreen';
 import * as auth from './api/auth';
 import { TourProvider, useTour } from './contexts/TourContext';
+import { sampleReportForTour } from './data/sample-report';
 
-const AppContent = () => {
-  const [screen, setScreen] = useState<Screen>(Screen.Dashboard);
+const AppContainer = () => {
+  const [screen, setScreen] = useState<Screen>(Screen.Login);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [planContent, setPlanContent] = useState<string>('');
-  const [analysisReport, setAnalysisReport] = useState<AnalysisReport | null>(null);
-  const [improvedPlanContent, setImprovedPlanContent] = useState<string | null>(null);
-
-  const { isTourActive, sampleReport, currentStepConfig } = useTour();
+  const [reports, setReports] = useState<AnalysisReport[]>([]);
+  const [activeReport, setActiveReport] = useState<AnalysisReport | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  
+  const tour = useTour();
 
   const navigateTo: NavigateTo = (newScreen: Screen) => {
     setScreen(newScreen);
   };
+  
+  const addAuditLog = useCallback((action: AuditLogAction, details: string) => {
+    if(!currentUser) return;
+    const newLog: AuditLog = {
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      user: currentUser.email,
+      action,
+      details,
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  }, [currentUser]);
   
   useEffect(() => {
     const user = auth.getCurrentUser();
     if (user) {
       setCurrentUser(user);
       setScreen(Screen.Dashboard);
+      
+      const isFirstVisit = !localStorage.getItem('vesta-tour-completed');
+      if (isFirstVisit && tour) {
+        setTimeout(() => tour.startTour(), 1000);
+      }
     } else {
       setScreen(Screen.Login);
     }
   }, []);
 
-  const handleLoginSuccess = (user: User) => {
+  const handleLoginSuccess = (user: User, isSocialLogin: boolean = false) => {
+    const isFirstVisit = !localStorage.getItem('vesta-tour-completed');
+    
     setCurrentUser(user);
+    addAuditLog(isSocialLogin ? 'Social Login' : 'User Login', `User ${user.email} logged in.`);
     navigateTo(Screen.Dashboard);
+
+    if (isFirstVisit && tour) {
+      setTimeout(() => tour.startTour(), 1000); // Delay to allow dashboard to render
+    }
   };
   
   const handleLogout = () => {
+    if (currentUser) {
+        addAuditLog('User Logout', `User ${currentUser.email} logged out.`);
+    }
     auth.logout();
     setCurrentUser(null);
     setScreen(Screen.Login);
   };
 
-  const handleStartAnalysis = (content: string) => {
-    setPlanContent(content);
-    navigateTo(Screen.AnalysisInProgress);
-  };
-
-  const handleAnalysisComplete = (report: AnalysisReport) => {
-    setAnalysisReport(report);
-    navigateTo(Screen.Report);
-  };
-
-  const handleStartImprovement = () => {
-    if (planContent && analysisReport) {
-      navigateTo(Screen.Improving);
+  const handleStartNewAnalysis = () => {
+    if (tour && tour.isActive && tour.currentStep === 0) {
+      setActiveReport(sampleReportForTour);
+      navigateTo(Screen.Analysis);
+      setTimeout(() => tour.nextStep(), 500); // Give analysis screen time to mount
+    } else {
+      setActiveReport(null);
+      navigateTo(Screen.Analysis);
     }
   };
 
-  const handleImprovementComplete = (improvedContent: string) => {
-    setImprovedPlanContent(improvedContent);
-    navigateTo(Screen.ImprovedReport);
+  const handleSelectReport = (report: AnalysisReport) => {
+    setActiveReport(report);
+    navigateTo(Screen.Analysis);
+  };
+
+  const handleAnalysisComplete = (report: AnalysisReport) => {
+    // Add to history, avoiding duplicates by title for simplicity
+    if (!reports.some(r => r.title === report.title)) {
+      setReports(prev => [report, ...prev]);
+    }
+    addAuditLog('Analysis Run', `Analysis completed for: ${report.title}`);
+    setActiveReport(report);
   };
 
   const renderScreen = () => {
-    const reportForScreen = isTourActive && currentStepConfig?.screen === Screen.Report ? sampleReport : analysisReport;
-    const planForScreen = isTourActive && currentStepConfig?.screen === Screen.Report ? "This is a sample project plan used for the guided tour." : planContent;
-
     switch (screen) {
       case Screen.Dashboard:
-        return <DashboardScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
-      case Screen.Upload:
-        return <UploadScreen navigateTo={navigateTo} onStartAnalysis={handleStartAnalysis} currentUser={currentUser!} onLogout={handleLogout} />;
-      case Screen.AnalysisInProgress:
-        return <AnalysisInProgressScreen planContent={planContent} onAnalysisComplete={handleAnalysisComplete} />;
-      case Screen.Report:
-        return <ReportScreen 
+        return <DashboardScreen 
                   navigateTo={navigateTo} 
-                  report={reportForScreen} 
                   currentUser={currentUser!} 
                   onLogout={handleLogout} 
-                  planContent={planForScreen}
-                  onStartImprovement={handleStartImprovement}
+                  reports={reports}
+                  onSelectReport={handleSelectReport}
+                  onStartNewAnalysis={handleStartNewAnalysis}
                />;
-      case Screen.Improving:
-        return <ImprovingScreen 
-                  planContent={planContent!} 
-                  analysisReport={analysisReport!} 
-                  onImprovementComplete={handleImprovementComplete} 
-               />;
-      case Screen.ImprovedReport:
-        return <ImprovedReportScreen
+      case Screen.Analysis:
+        return <AnalysisScreen
                   navigateTo={navigateTo}
-                  originalContent={planContent!}
-                  improvedContent={improvedPlanContent!}
                   currentUser={currentUser!}
                   onLogout={handleLogout}
+                  activeReport={activeReport}
+                  onAnalysisComplete={handleAnalysisComplete}
+                  addAuditLog={addAuditLog}
                 />;
       case Screen.AuditTrail:
-        return <PlaceholderScreen navigateTo={navigateTo} activeScreen={Screen.AuditTrail} title="Audit Trail" currentUser={currentUser!} onLogout={handleLogout}/>;
+        return <AuditTrailScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} logs={auditLogs} />;
       case Screen.KnowledgeBase:
         return <KnowledgeBaseScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout}/>;
       case Screen.Settings:
         return <SettingsScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
       default:
-        return <DashboardScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
+        return <DashboardScreen 
+                  navigateTo={navigateTo} 
+                  currentUser={currentUser!} 
+                  onLogout={handleLogout} 
+                  reports={reports}
+                  onSelectReport={handleSelectReport}
+                  onStartNewAnalysis={handleStartNewAnalysis}
+                />;
     }
   };
 
   return (
-    <div className="font-sans bg-vesta-background dark:bg-gray-900 min-h-screen text-vesta-text dark:text-gray-200">
+    <div className="font-sans bg-light-main dark:bg-dark-main min-h-screen text-primary-text-light dark:text-primary-text-dark">
       {currentUser ? renderScreen() : <LoginScreen onLoginSuccess={handleLoginSuccess} />}
     </div>
   );
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>(Screen.Login);
-  const navigateTo: NavigateTo = (newScreen: Screen) => setScreen(newScreen);
-  
   return (
-      <TourProvider navigateTo={navigateTo}>
-          <AppContent />
+      <TourProvider>
+        <AppContainer />
       </TourProvider>
-  )
+  );
 }

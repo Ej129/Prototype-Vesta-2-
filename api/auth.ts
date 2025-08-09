@@ -1,4 +1,3 @@
-
 import { User } from '../types';
 
 // In a real app, this would be a secure backend service.
@@ -18,6 +17,18 @@ const initializeUsers = () => {
 };
 
 initializeUsers();
+
+const emailToName = (email: string): string => {
+    if (!email || !email.includes('@')) {
+        return "User";
+    }
+    const namePart = email.split('@')[0];
+    return namePart
+        .split(/[._-]/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+};
+
 
 export const signUp = (name: string, email: string, password: string): Promise<User> => {
     return new Promise((resolve, reject) => {
@@ -59,6 +70,19 @@ export const login = (email: string, password: string): Promise<User> => {
             localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
             resolve(sessionUser);
         }, 500);
+    });
+};
+
+export const socialLogin = (email: string): Promise<User> => {
+    return new Promise((resolve) => {
+        setTimeout(() => { // Simulate network delay
+            const user: User = {
+                name: emailToName(email),
+                email: email,
+            };
+            localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+            resolve(user);
+        }, 300);
     });
 };
 
