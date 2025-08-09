@@ -45,12 +45,12 @@ const TourTooltip: React.FC<TourTooltipProps> = ({ targetElement, step, onNext, 
 
   const content = (
     <div style={style}>
-      <div className="bg-vesta-primary text-white rounded-lg shadow-2xl p-4 animate-fade-in">
+      <div className="bg-primary-blue text-white rounded-lg shadow-2xl p-4 animate-fade-in">
         <h3 className="font-bold text-lg mb-2">{step.title}</h3>
         <p className="text-sm text-gray-200 mb-4">{step.content}</p>
         <div className="flex justify-between items-center">
           <button onClick={onSkip} className="text-xs text-gray-300 hover:underline">Skip Tour</button>
-          <button onClick={onNext} className="bg-vesta-secondary text-white font-bold py-1.5 px-4 rounded-md text-sm hover:bg-opacity-90 transition-all">
+          <button onClick={onNext} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-1.5 px-4 rounded-md text-sm transition-all">
             {nextLabel}
           </button>
         </div>

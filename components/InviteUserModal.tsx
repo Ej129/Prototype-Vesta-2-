@@ -18,12 +18,12 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({ onClose, onInvite }) 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" aria-modal="true" role="dialog" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full transform transition-all animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold text-vesta-primary dark:text-white mb-2">Invite New User</h2>
-                <p className="text-vesta-text-light dark:text-gray-400 mb-6">Enter the email address and select a role for the new workspace member.</p>
+            <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-2xl p-8 max-w-md w-full transform transition-all animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold text-primary-text-light dark:text-primary-text-dark mb-2">Invite New User</h2>
+                <p className="text-secondary-text-light dark:text-secondary-text-dark mb-6">Enter the email address and select a role for the new workspace member.</p>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="invite-email" className="block text-sm font-medium text-vesta-text dark:text-gray-300 mb-2">
+                        <label htmlFor="invite-email" className="block text-sm font-medium text-primary-text-light dark:text-primary-text-dark mb-2">
                             Email Address
                         </label>
                         <input
@@ -31,20 +31,20 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({ onClose, onInvite }) 
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 text-vesta-text dark:text-gray-100"
+                            className="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-main dark:bg-dark-main text-primary-text-light dark:text-primary-text-dark"
                             placeholder="name@company.com"
                             required
                         />
                     </div>
                     <div>
-                        <label htmlFor="invite-role" className="block text-sm font-medium text-vesta-text dark:text-gray-300 mb-2">
+                        <label htmlFor="invite-role" className="block text-sm font-medium text-primary-text-light dark:text-primary-text-dark mb-2">
                             Role
                         </label>
                         <select
                             id="invite-role"
                             value={role}
                             onChange={(e) => setRole(e.target.value as UserRole)}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 text-vesta-text dark:text-gray-100 appearance-none bg-no-repeat" style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundSize: '1.5em 1.5em'}}
+                            className="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-main dark:bg-dark-main text-primary-text-light dark:text-primary-text-dark appearance-none bg-no-repeat" style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundSize: '1.5em 1.5em'}}
                         >
                             <option value="Member">Member</option>
                             <option value="Legal Reviewer">Legal Reviewer</option>
@@ -55,13 +55,13 @@ const InviteUserModal: React.FC<InviteUserModalProps> = ({ onClose, onInvite }) 
                         <button
                             type="button"
                             onClick={onClose}
-                            className="bg-gray-200 dark:bg-gray-700 text-vesta-text-light dark:text-gray-300 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                            className="bg-light-main dark:bg-dark-main text-secondary-text-light dark:text-secondary-text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="bg-vesta-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-opacity-50"
+                            className="btn-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-opacity-50"
                             disabled={!email}
                         >
                             Send Invite

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { NavigateTo, Screen, AnalysisReport, Finding, User, FindingStatus, AuditLogAction, FeedbackReason } from '../types';
+import { NavigateTo, Screen, AnalysisReport, Finding, User, FindingStatus, AuditLogAction, FeedbackReason, KnowledgeSource, DismissalRule } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
 import { SparklesIcon, DownloadIcon, CheckCircleIcon, XCircleIcon, ChevronDownIcon, AlertTriangleIcon, AlertCircleIcon } from '../components/Icons';
 import UploadModal from '../components/UploadModal';
@@ -126,9 +126,12 @@ interface AnalysisScreenProps {
   activeReport: AnalysisReport | null;
   onAnalysisComplete: (report: AnalysisReport) => void;
   addAuditLog: (action: AuditLogAction, details: string) => void;
+  knowledgeBaseSources: KnowledgeSource[];
+  dismissalRules: DismissalRule[];
+  onAddDismissalRule: (finding: Finding, reason: FeedbackReason) => void;
 }
 
-const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigateTo, currentUser, onLogout, activeReport, onAnalysisComplete, addAuditLog }) => {
+const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigateTo, currentUser, onLogout, activeReport, onAnalysisComplete, addAuditLog, knowledgeBaseSources, dismissalRules, onAddDismissalRule }) => {
   const [currentReport, setCurrentReport] = useState<AnalysisReport | null>(activeReport);
   const [editorHtml, setEditorHtml] = useState('');
   const [plainTextContent, setPlainTextContent] = useState('');
@@ -237,7 +240,7 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigateTo, currentUser
       addAuditLog('Document Upload', `File uploaded: ${fileName}`);
       setShowUploadModal(false);
       setIsLoading(true);
-      const report = await analyzePlan(content);
+      const report = await analyzePlan(content, knowledgeBaseSources, dismissalRules);
       report.title = fileName || "Pasted Text Analysis";
       onAnalysisComplete(report); // Add to dashboard history
       updateReportData(report);
@@ -324,16 +327,8 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigateTo, currentUser
   };
 
   const handleFeedbackSubmit = (reason: FeedbackReason) => {
-    if (!feedbackFinding || !currentUser) return;
-
-    const feedbackData = {
-        findingId: feedbackFinding.id,
-        reason: reason,
-        user: currentUser.email,
-        timestamp: new Date().toISOString(),
-    };
-    console.log(JSON.stringify(feedbackData, null, 2));
-
+    if (!feedbackFinding) return;
+    onAddDismissalRule(feedbackFinding, reason);
     handleFindingStatusChange(feedbackFinding.id, 'dismissed');
     setFeedbackFinding(null);
   };
@@ -349,8 +344,8 @@ const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ navigateTo, currentUser
   if (isLoading) {
       return (
           <SidebarMainLayout navigateTo={navigateTo} activeScreen={Screen.Analysis} currentUser={currentUser} onLogout={onLogout}>
-              <div className="flex-1 flex flex-col items-center justify-center bg-dark-main">
-                  <AnimatedChecklist steps={analysisSteps} title="Analyzing Your Document..." textColorClass="text-gray-300" />
+              <div className="flex-1 flex flex-col items-center justify-center">
+                  <AnimatedChecklist steps={analysisSteps} title="Analyzing Your Document..." />
               </div>
           </SidebarMainLayout>
       );

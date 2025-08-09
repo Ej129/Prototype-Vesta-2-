@@ -1,10 +1,8 @@
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { NavigateTo, Screen, User, WorkspaceUser, UserRole } from '../types';
+import { NavigateTo, Screen, User, WorkspaceUser, UserRole, DismissalRule } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
 import { Header } from '../components/Header';
-import { UserProfileIcon, BellIcon, BriefcaseIcon, ShieldIcon, LinkIcon, KeyIcon, MoonIcon, SunIcon, UploadCloudIcon, PaletteIcon, PlusIcon, TrashIcon } from '../components/Icons';
+import { UserProfileIcon, BellIcon, BriefcaseIcon, ShieldIcon, LinkIcon, KeyIcon, MoonIcon, SunIcon, UploadCloudIcon, PaletteIcon, PlusIcon, TrashIcon, BrainCircuitIcon } from '../components/Icons';
 import InviteUserModal from '../components/InviteUserModal';
 
 
@@ -12,6 +10,8 @@ interface SettingsScreenProps {
   navigateTo: NavigateTo;
   currentUser: User;
   onLogout: () => void;
+  dismissalRules: DismissalRule[];
+  onDeleteDismissalRule: (id: string) => void;
 }
 
 const SettingsCard = ({ title, subtitle, children, footer }: { title: string, subtitle: string, children: React.ReactNode, footer?: React.ReactNode }) => (
@@ -268,8 +268,56 @@ const IntegrationsSettings = () => (
     </div>
 );
 
+const AICustomizationSettings = ({ rules, onDeleteRule }: { rules: DismissalRule[], onDeleteRule: (id: string) => void }) => {
+    return (
+        <SettingsCard
+            title="AI Learning & Customization"
+            subtitle="Manage the rules Vesta has learned from your feedback."
+        >
+            {rules.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="border-b border-border-light dark:border-border-dark">
+                            <tr>
+                                <th className="p-2 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Dismissed Finding</th>
+                                <th className="p-2 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Reason</th>
+                                <th className="p-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rules.map(rule => (
+                                <tr key={rule.id} className="border-b border-border-light dark:border-border-dark last:border-b-0">
+                                    <td className="p-2 text-primary-text-light dark:text-primary-text-dark align-top">
+                                        <p className="font-medium">{rule.findingTitle}</p>
+                                    </td>
+                                    <td className="p-2 text-secondary-text-light dark:text-secondary-text-dark align-top">
+                                        <span className="px-3 py-1 text-xs font-semibold text-primary-blue bg-primary-blue/10 rounded-full">
+                                          {rule.reason}
+                                        </span>
+                                    </td>
+                                    <td className="p-2 text-right align-top">
+                                        <button onClick={() => onDeleteRule(rule.id)} aria-label="Forget this rule">
+                                            <TrashIcon className="w-5 h-5 text-gray-400 hover:text-accent-critical cursor-pointer" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="p-8 text-center bg-light-main dark:bg-dark-main rounded-lg">
+                    <BrainCircuitIcon className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600" />
+                    <h3 className="text-lg font-semibold text-primary-text-light dark:text-primary-text-dark mt-4">No Custom Rules Yet</h3>
+                    <p className="mt-1 text-secondary-text-light dark:text-secondary-text-dark">As you dismiss findings and provide feedback, Vesta will learn. Your custom rules will appear here.</p>
+                </div>
+            )}
+        </SettingsCard>
+    );
+};
 
-const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser, onLogout }) => {
+
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser, onLogout, dismissalRules, onDeleteDismissalRule }) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [isInviteModalOpen, setInviteModalOpen] = useState(false);
     
@@ -316,6 +364,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
         { id: 'notifications', label: 'Notifications', icon: <BellIcon className="w-5 h-5 mr-3" /> },
         { id: 'security', label: 'Security', icon: <ShieldIcon className="w-5 h-5 mr-3" /> },
         { id: 'integrations', label: 'Integrations', icon: <LinkIcon className="w-5 h-5 mr-3" /> },
+        { id: 'ai', label: 'AI Customization', icon: <BrainCircuitIcon className="w-5 h-5 mr-3" /> },
     ];
 
     const renderContent = () => {
@@ -325,6 +374,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigateTo, currentUser
             case 'notifications': return <NotificationsSettings />;
             case 'security': return <SecuritySettings />;
             case 'integrations': return <IntegrationsSettings />;
+            case 'ai': return <AICustomizationSettings rules={dismissalRules} onDeleteRule={onDeleteDismissalRule} />;
             default: return <ProfileSettings user={currentUser} />;
         }
     };

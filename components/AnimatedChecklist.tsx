@@ -8,7 +8,7 @@ interface AnimatedChecklistProps {
   title?: string;
 }
 
-export const AnimatedChecklist: React.FC<AnimatedChecklistProps> = ({ steps, onComplete, textColorClass = 'text-gray-300', title }) => {
+export const AnimatedChecklist: React.FC<AnimatedChecklistProps> = ({ steps, onComplete, textColorClass = 'text-primary-text-light dark:text-primary-text-dark', title }) => {
   const [visibleSteps, setVisibleSteps] = useState(0);
 
   useEffect(() => {
@@ -28,13 +28,13 @@ export const AnimatedChecklist: React.FC<AnimatedChecklistProps> = ({ steps, onC
   }, [visibleSteps, steps, onComplete]);
 
   return (
-    <div className="text-center p-8 bg-gray-800/50 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl max-w-lg mx-auto">
+    <div className="text-center p-8 bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-sm rounded-2xl max-w-lg mx-auto border border-border-light dark:border-border-dark">
         {title && <h2 className={`text-2xl font-bold mb-6 ${textColorClass}`}>{title}</h2>}
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-vesta-secondary mx-auto mb-8"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary-blue mx-auto mb-8"></div>
         <div className="space-y-4 text-left">
             {steps.map((step, index) => (
                 <div key={index} className={`flex items-center justify-start text-lg transition-opacity duration-500 ${index < visibleSteps ? 'opacity-100' : 'opacity-0'}`}>
-                    <CheckCircleIcon className="w-6 h-6 mr-4 text-vesta-accent-success flex-shrink-0" />
+                    <CheckCircleIcon className="w-6 h-6 mr-4 text-accent-success flex-shrink-0" />
                     <span className={textColorClass}>{step}</span>
                 </div>
             ))}

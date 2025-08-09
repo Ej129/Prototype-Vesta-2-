@@ -233,3 +233,14 @@ export const AlertCircleIcon = ({ className }: { className?: string }) => (
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
     </svg>
 );
+
+export const BrainCircuitIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M14 9a2 2 0 1 1-4 0" />
+        <path d="M12 20a8 8 0 0 1-8-8" />
+        <path d="M12 4a8 8 0 0 1 8 8" />
+        <path d="M4 12a8 8 0 0 1 8-8" />
+        <path d="M20 12a8 8 0 0 1-8 8" />
+        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
+    </svg>
+);

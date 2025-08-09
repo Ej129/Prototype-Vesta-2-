@@ -67,3 +67,16 @@ export interface AuditLog {
     action: AuditLogAction;
     details: string;
 }
+
+export interface KnowledgeSource {
+    id: string;
+    title: string;
+    content: string;
+}
+
+export interface DismissalRule {
+    id: string;
+    findingTitle: string;
+    reason: FeedbackReason;
+    timestamp: string;
+}

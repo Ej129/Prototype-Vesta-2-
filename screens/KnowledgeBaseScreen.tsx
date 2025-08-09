@@ -1,60 +1,65 @@
-
-
 import React, { useState } from 'react';
-import { NavigateTo, Screen, User } from '../types';
+import { NavigateTo, Screen, User, KnowledgeSource } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
 import { Header } from '../components/Header';
-import { PlusIcon, GlobeIcon, RefreshIcon, TrashIcon } from '../components/Icons';
+import { PlusIcon, TrashIcon, LibraryIcon, ChevronDownIcon } from '../components/Icons';
 
 interface KnowledgeBaseScreenProps {
   navigateTo: NavigateTo;
   currentUser: User;
   onLogout: () => void;
+  sources: KnowledgeSource[];
+  onAddSource: (title: string, content: string) => void;
+  onDeleteSource: (id: string) => void;
 }
 
-interface KnowledgeSource {
-  id: number;
-  url: string;
-  addedDate: string;
-  status: 'Active' | 'Crawling';
-}
+const KnowledgeSourceCard = ({ source, onDelete }: { source: KnowledgeSource, onDelete: (id: string) => void}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    return (
+        <div className="bg-light-card dark:bg-dark-card rounded-lg card-shadow border border-border-light dark:border-border-dark">
+            <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+                <h4 className="font-bold text-primary-text-light dark:text-primary-text-dark">{source.title}</h4>
+                <div className="flex items-center">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onDelete(source.id); }} 
+                        className="p-1 text-secondary-text-light dark:text-secondary-text-dark hover:text-accent-critical dark:hover:text-accent-critical mr-2"
+                        aria-label="Delete source"
+                    >
+                        <TrashIcon className="w-5 h-5"/>
+                    </button>
+                    <ChevronDownIcon className={`w-6 h-6 text-secondary-text-light dark:text-secondary-text-dark transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </div>
+            </div>
+            {isOpen && (
+                <div className="p-4 pt-0">
+                    <div className="bg-light-main dark:bg-dark-main p-4 rounded-md max-h-60 overflow-y-auto">
+                        <pre className="text-sm text-secondary-text-light dark:text-secondary-text-dark whitespace-pre-wrap font-sans">{source.content}</pre>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
-const initialSources: KnowledgeSource[] = [
-    { id: 1, url: 'https://www.bsp.gov.ph/Pages/Regulations/LawsAndIssuances.aspx', addedDate: 'Aug 01, 2025', status: 'Active' },
-    { id: 2, url: 'https://www.privacy.gov.ph/data-privacy-act/', addedDate: 'Jul 28, 2025', status: 'Active' },
-];
-
-
-const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, currentUser, onLogout }) => {
-    const [sources, setSources] = useState<KnowledgeSource[]>(initialSources);
-    const [newUrl, setNewUrl] = useState('');
+const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, currentUser, onLogout, sources, onAddSource, onDeleteSource }) => {
+    const [newTitle, setNewTitle] = useState('');
+    const [newContent, setNewContent] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
     const handleAddSource = () => {
-        if (!newUrl.trim() || !newUrl.startsWith('http')) {
-            alert("Please enter a valid URL starting with http or https.");
+        if (!newTitle.trim() || !newContent.trim()) {
+            alert("Please provide both a title and content for the knowledge source.");
             return;
         }
-        
-        const crawlingSource: KnowledgeSource = {
-            id: Date.now(),
-            url: newUrl,
-            addedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-            status: 'Crawling',
-        };
-        
-        setSources(prev => [crawlingSource, ...prev]);
-        setNewUrl('');
         setIsAdding(true);
-        
+        onAddSource(newTitle, newContent);
+        // Reset form after a short delay to allow state to update
         setTimeout(() => {
-            setSources(prev => prev.map(s => s.id === crawlingSource.id ? { ...s, status: 'Active' } : s));
-            setIsAdding(false);
-        }, 2500); // Simulate crawling/processing time
-    };
-
-    const handleDeleteSource = (id: number) => {
-        setSources(prev => prev.filter(source => source.id !== id));
+          setNewTitle('');
+          setNewContent('');
+          setIsAdding(false);
+        }, 300);
     };
     
   return (
@@ -63,86 +68,49 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
       <div className="p-8 space-y-8">
         
         <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg card-shadow border border-border-light dark:border-border-dark">
-            <h3 className="text-lg font-bold text-primary-text-light dark:text-primary-text-dark mb-4">Add New Regulatory Source</h3>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="relative flex-grow w-full">
-                    <GlobeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-text-light dark:text-secondary-text-dark" />
-                    <input 
-                        type="url"
-                        value={newUrl}
-                        onChange={(e) => setNewUrl(e.target.value)}
-                        placeholder="https://www.example-regulator.gov/documents/..."
-                        className="w-full pl-10 pr-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-card dark:bg-dark-card text-primary-text-light dark:text-primary-text-dark"
-                        disabled={isAdding}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddSource()}
-                    />
+            <h3 className="text-lg font-bold text-primary-text-light dark:text-primary-text-dark mb-4">Add New Knowledge Source</h3>
+            <div className="space-y-4">
+                <input 
+                    type="text"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="e.g., BSP Circular No. 1048"
+                    className="w-full px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-main dark:bg-dark-main text-primary-text-light dark:text-primary-text-dark"
+                    disabled={isAdding}
+                />
+                 <textarea
+                    value={newContent}
+                    onChange={(e) => setNewContent(e.target.value)}
+                    placeholder="Paste the full text of the regulation or policy here..."
+                    className="w-full h-40 px-4 py-2 border border-border-light dark:border-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue bg-light-main dark:bg-dark-main text-primary-text-light dark:text-primary-text-dark resize-y"
+                    disabled={isAdding}
+                />
+                <div className="flex justify-end">
+                    <button 
+                        onClick={handleAddSource}
+                        disabled={isAdding || !newTitle.trim() || !newContent.trim()}
+                        className="flex-shrink-0 flex items-center justify-center px-6 py-2 btn-primary text-white font-bold rounded-lg hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                        <PlusIcon className="w-5 h-5 mr-2" />
+                        Add Source
+                    </button>
                 </div>
-                <button 
-                    onClick={handleAddSource}
-                    disabled={isAdding || !newUrl.trim()}
-                    className="flex-shrink-0 flex items-center justify-center px-6 py-2 btn-primary text-white font-bold rounded-lg hover:bg-opacity-90 transition disabled:bg-opacity-50 disabled:cursor-not-allowed w-full sm:w-auto whitespace-nowrap"
-                >
-                    {isAdding ? (
-                        <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                            Adding...
-                        </>
-                    ) : (
-                        <>
-                            <PlusIcon className="w-5 h-5 mr-2" />
-                            Add Source
-                        </>
-                    )}
-                </button>
             </div>
         </div>
 
-        <div>
-          <h2 className="text-xl font-bold text-primary-text-light dark:text-primary-text-dark mb-4">Managed Sources</h2>
-          <div className="bg-light-card dark:bg-dark-card rounded-lg card-shadow overflow-hidden border border-border-light dark:border-border-dark">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 dark:bg-dark-main/20 border-b border-border-light dark:border-border-dark">
-                <tr>
-                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Source URL</th>
-                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Date Added</th>
-                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Status</th>
-                  <th className="p-4 font-semibold text-secondary-text-light dark:text-secondary-text-dark text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sources.map((source, index) => (
-                  <tr key={source.id} className="border-b border-border-light dark:border-border-dark last:border-b-0">
-                    <td className="p-4 text-primary-blue dark:text-blue-400 font-medium truncate max-w-sm">
-                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{source.url}</a>
-                    </td>
-                    <td className="p-4 text-secondary-text-light dark:text-secondary-text-dark">{source.addedDate}</td>
-                    <td className="p-4">
-                      {source.status === 'Active' ? (
-                        <span className="px-3 py-1 text-xs font-semibold text-accent-success bg-accent-success/10 rounded-full">
-                          {source.status}
-                        </span>
-                      ) : (
-                         <span className="flex items-center px-3 py-1 text-xs font-semibold text-primary-blue bg-primary-blue/10 rounded-full">
-                           <div className="w-3 h-3 border-2 border-primary-blue border-t-transparent rounded-full animate-spin mr-2"></div>
-                           {source.status}
-                         </span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                          <button aria-label="Refresh Source" className="text-gray-400 hover:text-primary-blue transition">
-                              <RefreshIcon className="w-5 h-5"/>
-                          </button>
-                          <button onClick={() => handleDeleteSource(source.id)} aria-label="Delete Source" className="text-gray-400 hover:text-accent-critical transition">
-                              <TrashIcon className="w-5 h-5"/>
-                          </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-primary-text-light dark:text-primary-text-dark">Managed Sources</h2>
+          {sources.length > 0 ? (
+              sources.map(source => (
+                  <KnowledgeSourceCard key={source.id} source={source} onDelete={onDeleteSource} />
+              ))
+          ) : (
+             <div className="text-center bg-light-card dark:bg-dark-card p-12 rounded-xl card-shadow border border-border-light dark:border-border-dark">
+                <LibraryIcon className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600" />
+                <h3 className="text-lg font-semibold text-primary-text-light dark:text-primary-text-dark mt-4">Your Knowledge Base is Empty</h3>
+                <p className="mt-1 text-secondary-text-light dark:text-secondary-text-dark">Add regulations or internal policies to customize Vesta's analysis.</p>
+            </div>
+          )}
         </div>
       </div>
     </SidebarMainLayout>
