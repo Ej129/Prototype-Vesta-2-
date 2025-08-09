@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Screen, NavigateTo, AnalysisReport, User } from './types';
 import LoginScreen from './screens/LoginScreen';
@@ -8,17 +7,25 @@ import AnalysisInProgressScreen from './screens/AnalysisInProgressScreen';
 import ReportScreen from './screens/ReportScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
 import KnowledgeBaseScreen from './screens/KnowledgeBaseScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import ImprovingScreen from './screens/ImprovingScreen';
 import ImprovedReportScreen from './screens/ImprovedReportScreen';
 import * as auth from './api/auth';
+import { TourProvider, useTour } from './contexts/TourContext';
 
-export default function App() {
+const AppContent = () => {
   const [screen, setScreen] = useState<Screen>(Screen.Dashboard);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [planContent, setPlanContent] = useState<string>('');
   const [analysisReport, setAnalysisReport] = useState<AnalysisReport | null>(null);
   const [improvedPlanContent, setImprovedPlanContent] = useState<string | null>(null);
 
+  const { isTourActive, sampleReport, currentStepConfig } = useTour();
+
+  const navigateTo: NavigateTo = (newScreen: Screen) => {
+    setScreen(newScreen);
+  };
+  
   useEffect(() => {
     const user = auth.getCurrentUser();
     if (user) {
@@ -28,10 +35,6 @@ export default function App() {
       setScreen(Screen.Login);
     }
   }, []);
-
-  const navigateTo: NavigateTo = (newScreen: Screen) => {
-    setScreen(newScreen);
-  };
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
@@ -66,6 +69,9 @@ export default function App() {
   };
 
   const renderScreen = () => {
+    const reportForScreen = isTourActive && currentStepConfig?.screen === Screen.Report ? sampleReport : analysisReport;
+    const planForScreen = isTourActive && currentStepConfig?.screen === Screen.Report ? "This is a sample project plan used for the guided tour." : planContent;
+
     switch (screen) {
       case Screen.Dashboard:
         return <DashboardScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
@@ -76,10 +82,10 @@ export default function App() {
       case Screen.Report:
         return <ReportScreen 
                   navigateTo={navigateTo} 
-                  report={analysisReport} 
+                  report={reportForScreen} 
                   currentUser={currentUser!} 
                   onLogout={handleLogout} 
-                  planContent={planContent}
+                  planContent={planForScreen}
                   onStartImprovement={handleStartImprovement}
                />;
       case Screen.Improving:
@@ -101,15 +107,26 @@ export default function App() {
       case Screen.KnowledgeBase:
         return <KnowledgeBaseScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout}/>;
       case Screen.Settings:
-        return <PlaceholderScreen navigateTo={navigateTo} activeScreen={Screen.Settings} title="Settings" currentUser={currentUser!} onLogout={handleLogout}/>;
+        return <SettingsScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
       default:
         return <DashboardScreen navigateTo={navigateTo} currentUser={currentUser!} onLogout={handleLogout} />;
     }
   };
 
   return (
-    <div className="font-sans bg-vesta-background min-h-screen text-vesta-text">
+    <div className="font-sans bg-vesta-background dark:bg-gray-900 min-h-screen text-vesta-text dark:text-gray-200">
       {currentUser ? renderScreen() : <LoginScreen onLoginSuccess={handleLoginSuccess} />}
     </div>
   );
+}
+
+export default function App() {
+  const [screen, setScreen] = useState<Screen>(Screen.Login);
+  const navigateTo: NavigateTo = (newScreen: Screen) => setScreen(newScreen);
+  
+  return (
+      <TourProvider navigateTo={navigateTo}>
+          <AppContent />
+      </TourProvider>
+  )
 }

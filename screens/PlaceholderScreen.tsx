@@ -17,9 +17,9 @@ const PlaceholderScreen: React.FC<PlaceholderScreenProps> = ({ navigateTo, activ
     <SidebarMainLayout navigateTo={navigateTo} activeScreen={activeScreen} currentUser={currentUser} onLogout={onLogout}>
       <Header title={title} />
       <div className="p-8">
-        <div className="bg-white p-20 rounded-lg shadow-md text-center border border-border-color">
-          <h2 className="text-2xl font-bold text-vesta-primary">Coming Soon</h2>
-          <p className="mt-4 text-vesta-text-light">
+        <div className="bg-white dark:bg-gray-800 p-20 rounded-lg shadow-md text-center border border-vesta-border dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-vesta-primary dark:text-gray-200">Coming Soon</h2>
+          <p className="mt-4 text-vesta-text-light dark:text-gray-400">
             The "{title}" feature is currently under development.
           </p>
         </div>

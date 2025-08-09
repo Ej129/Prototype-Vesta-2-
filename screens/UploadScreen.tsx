@@ -2,6 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { NavigateTo, Screen, User } from '../types';
 import { SidebarMainLayout } from '../components/Layout';
+import { Header } from '../components/Header';
 
 interface UploadScreenProps {
   navigateTo: NavigateTo;
@@ -55,22 +56,23 @@ const UploadScreen: React.FC<UploadScreenProps> = ({ navigateTo, onStartAnalysis
 
   return (
     <SidebarMainLayout navigateTo={navigateTo} activeScreen={Screen.Dashboard} currentUser={currentUser} onLogout={onLogout}>
+      <Header title="Create New Analysis" />
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
         <div className="w-full max-w-2xl">
-          <h1 className="text-3xl font-bold text-vesta-primary">Create a New Analysis</h1>
-          <p className="text-vesta-text-light mt-2 mb-8">
+          <h1 className="text-3xl font-bold text-vesta-primary dark:text-gray-100">Create a New Analysis</h1>
+          <p className="text-vesta-text-light dark:text-gray-400 mt-2 mb-8">
             Upload your project plan (PDF, DOCX, TXT) or paste the text below.
           </p>
           
-          <label htmlFor="file-upload" onDrop={handleFileDrop} onDragOver={handleDragOver} id="planUploader" className="border-2 border-dashed border-gray-300 rounded-xl p-12 cursor-pointer bg-white hover:bg-gray-50 transition block">
+          <label htmlFor="file-upload" onDrop={handleFileDrop} onDragOver={handleDragOver} id="planUploader" className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition block">
             <input id="file-upload" type="file" className="hidden" onChange={handleFileSelect} />
-            <p className="text-vesta-text-light font-semibold">{fileName || 'Drag & Drop Your File Here or Click to Browse'}</p>
+            <p className="text-vesta-text-light dark:text-gray-400 font-semibold">{fileName || 'Drag & Drop Your File Here or Click to Browse'}</p>
           </label>
           
           <div className="flex items-center my-6">
-            <hr className="flex-grow border-t border-gray-300" />
-            <span className="px-4 text-vesta-text-light font-semibold">OR</span>
-            <hr className="flex-grow border-t border-gray-300" />
+            <hr className="flex-grow border-t border-gray-300 dark:border-gray-600" />
+            <span className="px-4 text-vesta-text-light dark:text-gray-400 font-semibold">OR</span>
+            <hr className="flex-grow border-t border-gray-300 dark:border-gray-600" />
           </div>
 
           <textarea
@@ -78,7 +80,7 @@ const UploadScreen: React.FC<UploadScreenProps> = ({ navigateTo, onStartAnalysis
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Paste your business plan text here..."
-            className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary"
+            className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 dark:text-gray-100"
           ></textarea>
 
           <button

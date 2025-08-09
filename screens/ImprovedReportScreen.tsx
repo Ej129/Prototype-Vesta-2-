@@ -89,8 +89,8 @@ const ImprovedReportScreen: React.FC<ImprovedReportScreenProps> = ({ navigateTo,
             <div className="p-8">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h2 className="text-xl font-bold text-vesta-text">Comparison View</h2>
-                        <p className="text-vesta-text-light">Review the changes and copy the improved version.</p>
+                        <h2 className="text-xl font-bold text-vesta-text dark:text-gray-200">Comparison View</h2>
+                        <p className="text-vesta-text-light dark:text-gray-400">Review the changes and copy the improved version.</p>
                     </div>
                     <div className="flex items-center">
                         <button
@@ -117,16 +117,16 @@ const ImprovedReportScreen: React.FC<ImprovedReportScreenProps> = ({ navigateTo,
 
                             {isDownloadOpen && (
                                 <div 
-                                    className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                                    className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 z-10"
                                 >
                                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                                        <a href="#" onClick={handleDownloadPDF} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                        <a href="#" onClick={handleDownloadPDF} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">
                                             Download as PDF (.pdf)
                                         </a>
-                                        <a href="#" onClick={handleDownloadDOCX} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                        <a href="#" onClick={handleDownloadDOCX} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">
                                             Download as Word (.docx)
                                         </a>
-                                        <a href="#" onClick={handleDownloadTXT} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                        <a href="#" onClick={handleDownloadTXT} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem">
                                             Download as Text (.txt)
                                         </a>
                                     </div>
@@ -136,7 +136,7 @@ const ImprovedReportScreen: React.FC<ImprovedReportScreenProps> = ({ navigateTo,
 
                         <button
                             onClick={() => navigateTo(Screen.Dashboard)}
-                            className="ml-4 bg-gray-200 text-vesta-text-light font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-all"
+                            className="ml-4 bg-gray-200 dark:bg-gray-600 text-vesta-text-light dark:text-gray-300 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-all"
                         >
                             Finish
                         </button>
@@ -145,14 +145,14 @@ const ImprovedReportScreen: React.FC<ImprovedReportScreenProps> = ({ navigateTo,
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <h3 className="text-lg font-semibold text-vesta-primary mb-2">Original Plan</h3>
-                        <div className="bg-white p-4 rounded-lg border border-border-color h-[65vh] overflow-y-auto whitespace-pre-wrap font-mono text-sm">
+                        <h3 className="text-lg font-semibold text-vesta-primary dark:text-gray-300 mb-2">Original Plan</h3>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-vesta-border dark:border-gray-700 h-[65vh] overflow-y-auto whitespace-pre-wrap font-mono text-sm text-vesta-text-light dark:text-gray-300">
                             {originalContent}
                         </div>
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold text-vesta-accent-success mb-2">Vesta's Improved Plan</h3>
-                        <div className="bg-white p-4 rounded-lg border border-vesta-accent-success h-[65vh] overflow-y-auto whitespace-pre-wrap font-mono text-sm">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-vesta-accent-success h-[65vh] overflow-y-auto whitespace-pre-wrap font-mono text-sm text-vesta-text dark:text-gray-200">
                             {improvedContent}
                         </div>
                     </div>

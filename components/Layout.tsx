@@ -98,7 +98,7 @@ export const SidebarMainLayout: React.FC<SidebarMainLayoutProps> = ({ children, 
   return (
     <div className="flex">
       <Sidebar navigateTo={navigateTo} activeScreen={activeScreen} currentUser={currentUser} onLogout={onLogout} />
-      <main className="flex-1 h-screen overflow-y-auto">{children}</main>
+      <main className="flex-1 h-screen overflow-y-auto bg-vesta-background dark:bg-gray-900">{children}</main>
     </div>
   );
 };
@@ -109,7 +109,7 @@ interface CenteredLayoutProps {
 
 export const CenteredLayout: React.FC<CenteredLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-vesta-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-vesta-background dark:bg-gray-900 p-4">
         {children}
     </div>
   );

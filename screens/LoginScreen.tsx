@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User } from '../types';
 import { VestaLogo } from '../components/Icons';
@@ -36,14 +37,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
   };
   
-  const inputClasses = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white text-vesta-text placeholder:text-vesta-text-light";
+  const inputClasses = "w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 text-vesta-text dark:text-gray-100 placeholder:text-vesta-text-light dark:placeholder:text-gray-400";
 
   return (
     <CenteredLayout>
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg text-center">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center">
         <VestaLogo className="w-24 h-24 mx-auto" />
-        <h1 className="text-4xl font-bold text-vesta-primary mt-4">Vesta</h1>
-        <p className="text-vesta-text-light mt-2 mb-8">
+        <h1 className="text-4xl font-bold text-vesta-primary dark:text-white mt-4">Vesta</h1>
+        <p className="text-vesta-text-light dark:text-gray-400 mt-2 mb-8">
             {isLoginView ? 'Welcome Back' : 'Create Your Account'}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">

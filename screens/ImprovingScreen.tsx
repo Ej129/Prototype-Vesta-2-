@@ -50,7 +50,7 @@ const ImprovingScreen: React.FC<ImprovingScreenProps> = ({ planContent, analysis
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-vesta-secondary"></div>
             <SparklesIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-vesta-secondary" />
         </div>
-        <h2 className="text-2xl font-bold text-vesta-primary mt-8">
+        <h2 className="text-2xl font-bold text-vesta-primary dark:text-gray-100 mt-8">
           Vesta is improving your document...
         </h2>
         <div id="improvementSteps" className="mt-6 text-left inline-block">
@@ -59,7 +59,7 @@ const ImprovingScreen: React.FC<ImprovingScreenProps> = ({ planContent, analysis
               <li key={index} 
                   className={`flex items-center transition-opacity duration-500 ${index < visibleSteps ? 'opacity-100' : 'opacity-0'}`}>
                 <SparklesIcon className="w-5 h-5 text-vesta-secondary mr-3" />
-                <span className="text-vesta-text-light">{step}</span>
+                <span className="text-vesta-text-light dark:text-gray-400">{step}</span>
               </li>
             ))}
           </ul>

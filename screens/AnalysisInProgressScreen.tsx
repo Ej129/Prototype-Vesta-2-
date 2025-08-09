@@ -46,7 +46,7 @@ const AnalysisInProgressScreen: React.FC<AnalysisInProgressScreenProps> = ({ pla
     <CenteredLayout>
       <div className="w-full max-w-lg text-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-vesta-primary mx-auto"></div>
-        <h2 className="text-2xl font-bold text-vesta-primary mt-8">
+        <h2 className="text-2xl font-bold text-vesta-primary dark:text-gray-100 mt-8">
           Vesta is Analyzing Your Document...
         </h2>
         <div id="analysisSteps" className="mt-6 text-left inline-block">
@@ -55,7 +55,7 @@ const AnalysisInProgressScreen: React.FC<AnalysisInProgressScreenProps> = ({ pla
               <li key={index} 
                   className={`flex items-center transition-opacity duration-500 ${index < visibleSteps ? 'opacity-100' : 'opacity-0'}`}>
                 <CheckCircleIcon className="w-5 h-5 text-vesta-accent-success mr-3" />
-                <span className="text-vesta-text-light">{step}</span>
+                <span className="text-vesta-text-light dark:text-gray-400">{step}</span>
               </li>
             ))}
           </ul>

@@ -58,8 +58,8 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
       <Header title="Knowledge Base" />
       <div className="p-8 space-y-8">
         
-        <div className="bg-white p-6 rounded-lg shadow-md border border-border-color">
-            <h3 className="text-lg font-bold text-vesta-primary mb-4">Add New Regulatory Source</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-vesta-border dark:border-gray-700">
+            <h3 className="text-lg font-bold text-vesta-primary dark:text-gray-200 mb-4">Add New Regulatory Source</h3>
             <div className="flex items-center space-x-4">
                 <div className="relative flex-grow">
                     <GlobeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -68,7 +68,7 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
                         value={newUrl}
                         onChange={(e) => setNewUrl(e.target.value)}
                         placeholder="https://www.example-regulator.gov/documents/..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-vesta-secondary bg-white dark:bg-gray-700 dark:text-gray-100"
                         disabled={isAdding}
                     />
                 </div>
@@ -93,24 +93,24 @@ const KnowledgeBaseScreen: React.FC<KnowledgeBaseScreenProps> = ({ navigateTo, c
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-vesta-text mb-4">Managed Sources</h2>
-          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-border-color">
+          <h2 className="text-xl font-bold text-vesta-text dark:text-gray-200 mb-4">Managed Sources</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-vesta-border dark:border-gray-700">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-border-color">
+              <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-vesta-border dark:border-gray-700">
                 <tr>
-                  <th className="p-4 font-semibold text-vesta-text-light text-sm">Source URL</th>
-                  <th className="p-4 font-semibold text-vesta-text-light text-sm">Date Added</th>
-                  <th className="p-4 font-semibold text-vesta-text-light text-sm">Status</th>
-                  <th className="p-4 font-semibold text-vesta-text-light text-sm">Actions</th>
+                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Source URL</th>
+                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Date Added</th>
+                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Status</th>
+                  <th className="p-4 font-semibold text-vesta-text-light dark:text-gray-400 text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.map((source, index) => (
-                  <tr key={source.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                    <td className="p-4 text-vesta-primary font-medium truncate max-w-sm">
+                  <tr key={source.id} className="border-b border-vesta-border dark:border-gray-700 last:border-b-0">
+                    <td className="p-4 text-vesta-primary dark:text-vesta-secondary font-medium truncate max-w-sm">
                         <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{source.url}</a>
                     </td>
-                    <td className="p-4 text-vesta-text-light">{source.addedDate}</td>
+                    <td className="p-4 text-vesta-text-light dark:text-gray-400">{source.addedDate}</td>
                     <td className="p-4">
                       {source.status === 'Active' ? (
                         <span className="px-3 py-1 text-xs font-semibold text-vesta-accent-success bg-vesta-accent-success/10 rounded-full">
